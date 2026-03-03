@@ -1,0 +1,74 @@
+# docker-compose.yml
+# siyolo -- Simple YOLO Inference Server (ONNX Version)
+# https://github.com/nemesis2/siyolo
+#
+# Two profiles:
+#   gpu  — CUDA/TensorRT execution provider (requires NVIDIA Container Toolkit)
+#          docker compose --profile gpu up
+#
+#   cpu  — CPU execution provider only
+#          docker compose --profile cpu up
+#
+# Copy .env.example to .env and edit before first run:
+#   cp .env.example .env
+
+services:
+
+  siyolo-gpu:
+    profiles: [gpu]
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: gpu
+    image: siyolo:gpu
+    container_name: siyolo-gpu
+    restart: unless-stopped
+    ports:
+      - "${SERVER_PORT:-32168}:32168"
+    volumes:
+      # Bind-mount your local models directory so models and the TensorRT
+      # engine cache (.trt files) persist across container restarts.
+      - ${MODELS_DIR:-./models}:/app/models
+    env_file:
+      - .env
+    environment:
+      # These are the defaults; override in .env as needed.
+      SERVER_LISTEN:      "0.0.0.0"
+      SERVER_PORT:        "${SERVER_PORT:-32168}"
+      SERVER_MODEL:       "${SERVER_MODEL:-yolo26x.onnx}"
+      MINIMUM_CONFIDENCE: "${MINIMUM_CONFIDENCE:-0.65}"
+      IMG_SZ_X:           "${IMG_SZ_X:-1152}"
+      IMG_SZ_Y:           "${IMG_SZ_Y:-640}"
+      TRT_FP16:           "${TRT_FP16:-1}"
+      TRT_CACHE_DIR:      "/app/models"
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+
+  siyolo-cpu:
+    profiles: [cpu]
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: cpu
+    image: siyolo:cpu
+    container_name: siyolo-cpu
+    restart: unless-stopped
+    ports:
+      - "${SERVER_PORT:-32168}:32168"
+    volumes:
+      - ${MODELS_DIR:-./models}:/app/models
+    env_file:
+      - .env
+    environment:
+      SERVER_LISTEN:      "0.0.0.0"
+      SERVER_PORT:        "${SERVER_PORT:-32168}"
+      SERVER_MODEL:       "${SERVER_MODEL:-yolo26x.onnx}"
+      MINIMUM_CONFIDENCE: "${MINIMUM_CONFIDENCE:-0.65}"
+      IMG_SZ_X:           "${IMG_SZ_X:-1152}"
+      IMG_SZ_Y:           "${IMG_SZ_Y:-640}"
+      CUDA_VISIBLE_DEVICES: ""

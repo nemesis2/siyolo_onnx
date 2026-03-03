@@ -1,0 +1,27 @@
+# requirements.txt
+# siyolo -- Simple YOLO Inference Server (ONNX Version)
+# https://github.com/nemesis2/siyolo
+#
+# GPU/TensorRT deployment:
+#   pip install -r requirements.txt
+#
+# CPU-only deployment:
+#   Replace onnxruntime-gpu with onnxruntime below, then:
+#   pip install -r requirements.txt
+#
+# onnxruntime-gpu includes CUDA support and enables TensorRT when
+# libnvinfer is present on the system. For CPU-only, substitute
+# onnxruntime>=1.18.0 instead.
+
+# ONNX Runtime — GPU build (CUDA + TensorRT support)
+onnxruntime-gpu>=1.18.0
+
+# Web framework and ASGI server
+fastapi>=0.111.0
+uvicorn>=0.30.0
+
+# Image processing — headless excludes GUI dependencies
+opencv-python-headless>=4.9.0.80
+
+# Numerical computing (usually a transitive dependency, pinned for safety)
+numpy>=1.26.0
