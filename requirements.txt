@@ -25,3 +25,7 @@ opencv-python-headless>=4.9.0.80
 
 # Numerical computing (usually a transitive dependency, pinned for safety)
 numpy>=1.26.0
+
+python-multipart
+
+nvidia-cudnn-cu12
