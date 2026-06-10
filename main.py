@@ -18,7 +18,7 @@ SERVER_LISTEN = os.environ.get("SERVER_LISTEN", "127.0.0.1")                # ip
 SERVER_PORT = int(os.environ.get("SERVER_PORT", 32168))                     # listening port (32168/5000)
 UVICORN_LOG = os.environ.get("UVICORN_LOG", "warning")                      # uvicorn log level (warning)
 MINIMUM_CONFIDENCE = float(os.environ.get("MINIMUM_CONFIDENCE", 0.65))      # default confidence if not set in post (0.65)
-SERVER_MODEL = os.environ.get("SERVER_MODEL", "yolo26x.onnx")               # YOLO ONNX model to use
+SERVER_MODEL = os.environ.get("YOLO_MODEL", "yolo26x.onnx")                 # YOLO ONNX model to use
 
 # Image target dimensions (Must match what the model was exported at!)
 IMG_SZ_X = int(os.environ.get("IMG_SZ_X", 1152))                            # image width for inference (default 1152)
@@ -26,10 +26,12 @@ IMG_SZ_Y = int(os.environ.get("IMG_SZ_Y", 640))                             # im
 
 MAX_IMAGE_BYTES = int(os.environ.get("MAX_IMAGE_BYTES", 10 * 1024 * 1024))  # 10MB Max image size
 MAX_IMAGE_PIXELS = int(os.environ.get("MAX_IMAGE_PIXELS",40_000_000))       # ~200MP safety cap
+KEEPALIVE_TIMEOUT = int(os.environ.get("KEEPALIVE_TIMEOUT", 70))            # HTTP keep-alive idle timeout in seconds (70)
 
 # TensorRT / CoreML configuration
 TRT_FP16 = int(os.environ.get("TRT_FP16", 1))
 TRT_CACHE_DIR = os.environ.get("TRT_CACHE_DIR", "")                         # empty = use model directory
+WARMUP_RUNS = int(os.environ.get("WARMUP_RUNS", 5))                         # warm-up inference passes at startup
 
 
 import ast
@@ -388,14 +390,16 @@ def postprocess_standard(
     order    = filtered_scores[keep_idx].argsort()[::-1]
     keep_idx = keep_idx[order]
 
-    # Prepare final output boxes
-    final_boxes   = filtered_boxes[keep_idx]
+    # Convert kept boxes from [cx, cy, w, h] directly to [x_min, y_min, x_max, y_max]
+    # in a single step, avoiding intermediate final_boxes copy + re-conversion.
+    kept = filtered_boxes[keep_idx]
+    boxes_xyxy = np.empty((len(kept), 4), dtype=np.float32)
+    boxes_xyxy[:, 0] = kept[:, 0] - kept[:, 2] / 2   # x_min
+    boxes_xyxy[:, 1] = kept[:, 1] - kept[:, 3] / 2   # y_min
+    boxes_xyxy[:, 2] = kept[:, 0] + kept[:, 2] / 2   # x_max
+    boxes_xyxy[:, 3] = kept[:, 1] + kept[:, 3] / 2   # y_max
     final_scores  = filtered_scores[keep_idx]
     final_classes = class_ids[keep_idx]
-
-    # Convert [cx, cy, w, h] -> [x_min, y_min, x_max, y_max]
-    x_c, y_c, w_b, h_b = final_boxes.T
-    boxes_xyxy = np.stack([x_c - w_b/2, y_c - h_b/2, x_c + w_b/2, y_c + h_b/2], axis=1)
 
     # Remove letterbox padding and rescale to original image dimensions.
     # pad[0] = left offset (applied to x), pad[1] = top offset (applied to y).
@@ -448,33 +452,24 @@ def run_inference_sync(app: FastAPI, img: np.ndarray, min_confidence: float) -> 
       pipeline_ms — full pipeline including pre/post-processing
     Returns: (predictions, infer_ms, pipeline_ms)
     """
-    start_pipeline = time.time()
+    start_pipeline = time.perf_counter()
 
-    # Letterbox to inference dimensions, preserving aspect ratio.
-    # Returns the padded image, the uniform scale ratio, and the (left, top)
-    # integer pad offsets needed to invert the transform in the post-processors.
     padded_img, ratio, pad = letterbox(img, new_shape=(IMG_SZ_X, IMG_SZ_Y))
 
-    # blobFromImage: channel swap BGR->RGB, normalize, add batch dim.
-    # No size= argument — letterbox already produced the correct dimensions,
-    # so passing size= here would trigger a redundant (and potentially
-    # rounding-inconsistent) second resize.
-    input_tensor = cv2.dnn.blobFromImage(
-        padded_img,
-        scalefactor=1.0 / 255.0,
-        swapRB=True
-    )
+    # Per-call buffer — must not be shared across concurrent requests (data race).
+    buf = np.empty((1, 3, IMG_SZ_Y, IMG_SZ_X), dtype=np.float32)
+    buf[0, 0] = padded_img[:, :, 2].astype(np.float32) / 255.0  # R
+    buf[0, 1] = padded_img[:, :, 1].astype(np.float32) / 255.0  # G
+    buf[0, 2] = padded_img[:, :, 0].astype(np.float32) / 255.0  # B
 
-    # ONNX Runtime InferenceSession.run() is thread-safe for concurrent calls
-    # on the same session — no lock is required here.
-    start_infer = time.time()
-    outputs = app.state.session.run(None, {app.state.input_name: input_tensor})
-    infer_ms = int((time.time() - start_infer) * 1000)
+    start_infer = time.perf_counter()
+    outputs = app.state.session.run(None, {app.state.input_name: buf})
+    infer_ms = int((time.perf_counter() - start_infer) * 1000)
     if app.state.output_format == FORMAT_E2E:
         predictions = postprocess_e2e(outputs[0], img.shape, ratio, pad, min_confidence, app.state.names)
     else:
         predictions = postprocess_standard(outputs[0], img.shape, ratio, pad, min_confidence, app.state.names)
-    pipeline_ms = int((time.time() - start_pipeline) * 1000)
+    pipeline_ms = int((time.perf_counter() - start_pipeline) * 1000)
     return predictions, infer_ms, pipeline_ms
 
 # FastAPI lifespan — model loading, warm-up, and shutdown
@@ -544,16 +539,15 @@ async def lifespan(app: FastAPI):
         logger.warning(f"CUDAExecutionProvider unavailable — running on CPU ({get_cpu_name()}). "
                         "Check cuDNN/CUDA installation if GPU was expected.")
 
-    # Warm-up: two passes to ensure execution-provider memory buffers are fully
-    # allocated and any auto-tuning is complete before the first real request.
-    # The dummy image is routed through the full letterbox → blob pipeline to
-    # mirror the actual inference path as closely as possible.
     logger.info("Performing warm-up runs...")
-    dummy              = np.zeros((IMG_SZ_Y, IMG_SZ_X, 3), dtype=np.uint8)
+    dummy = np.zeros((IMG_SZ_Y, IMG_SZ_X, 3), dtype=np.uint8)
     dummy_padded, _, _ = letterbox(dummy, new_shape=(IMG_SZ_X, IMG_SZ_Y))
-    dummy_tensor       = cv2.dnn.blobFromImage(dummy_padded, scalefactor=1.0 / 255.0, swapRB=True)
-    for _ in range(2):
-        app.state.session.run(None, {app.state.input_name: dummy_tensor})
+    warmup_buf = np.empty((1, 3, IMG_SZ_Y, IMG_SZ_X), dtype=np.float32)
+    warmup_buf[0, 0] = dummy_padded[:, :, 2].astype(np.float32) / 255.0
+    warmup_buf[0, 1] = dummy_padded[:, :, 1].astype(np.float32) / 255.0
+    warmup_buf[0, 2] = dummy_padded[:, :, 0].astype(np.float32) / 255.0
+    for _ in range(WARMUP_RUNS):
+        app.state.session.run(None, {app.state.input_name: warmup_buf})
     logger.info(f"Simple YOLO ONNX server {VERSION} ready and listening on {SERVER_LISTEN}:{SERVER_PORT}")
 
     # Run
@@ -679,4 +673,4 @@ async def detect(
 # Entry point — direct execution via `python main.py`
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run("main:app", host=SERVER_LISTEN, port=SERVER_PORT, log_level=UVICORN_LOG.lower())
+    uvicorn.run("main:app", host=SERVER_LISTEN, port=SERVER_PORT, log_level=UVICORN_LOG.lower(), timeout_keep_alive=KEEPALIVE_TIMEOUT)
