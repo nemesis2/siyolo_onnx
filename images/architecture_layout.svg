@@ -1,0 +1,1622 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   viewBox="0 0 1200 1020"
+   width="1200"
+   height="1020"
+   font-family="'Segoe UI', Arial, sans-serif"
+   version="1.1"
+   id="svg127"
+   sodipodi:docname="security_system_layout.svg"
+   inkscape:version="1.4.3 (0d15f75, 2025-12-25)"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <sodipodi:namedview
+     id="namedview127"
+     pagecolor="#ffffff"
+     bordercolor="#000000"
+     borderopacity="0.25"
+     inkscape:showpageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#d1d1d1"
+     inkscape:zoom="3.2352941"
+     inkscape:cx="868.7"
+     inkscape:cy="360.24545"
+     inkscape:window-width="1920"
+     inkscape:window-height="1027"
+     inkscape:window-x="1912"
+     inkscape:window-y="77"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="svg127" />
+  <defs
+     id="defs9">
+    <marker
+       id="arr-blue"
+       markerWidth="8"
+       markerHeight="8"
+       refX="6"
+       refY="3"
+       orient="auto">
+      <path
+         d="M0,0 L0,6 L8,3 z"
+         fill="#3b82f6"
+         id="path1" />
+    </marker>
+    <marker
+       id="arr-gray"
+       markerWidth="8"
+       markerHeight="8"
+       refX="6"
+       refY="3"
+       orient="auto">
+      <path
+         d="M0,0 L0,6 L8,3 z"
+         fill="#4b5563"
+         id="path2" />
+    </marker>
+    <marker
+       id="arr-amber"
+       markerWidth="8"
+       markerHeight="8"
+       refX="6"
+       refY="3"
+       orient="auto">
+      <path
+         d="M0,0 L0,6 L8,3 z"
+         fill="#f59e0b"
+         id="path3" />
+    </marker>
+    <marker
+       id="arr-violet"
+       markerWidth="8"
+       markerHeight="6"
+       refX="6"
+       refY="3"
+       orient="auto-start-reverse"
+       viewBox="0 0 8 6"
+       preserveAspectRatio="xMidYMid">
+      <path
+         d="M0,0 L0,6 L8,3 z"
+         fill="#7c3aed"
+         id="path4" />
+    </marker>
+    <marker
+       id="arr-green"
+       markerWidth="8"
+       markerHeight="8"
+       refX="6"
+       refY="3"
+       orient="auto">
+      <path
+         d="M0,0 L0,6 L8,3 z"
+         fill="#10b981"
+         id="path5" />
+    </marker>
+    <marker
+       id="arr-lime"
+       markerWidth="8"
+       markerHeight="8"
+       refX="6"
+       refY="3"
+       orient="auto">
+      <path
+         d="M0,0 L0,6 L8,3 z"
+         fill="#4ade80"
+         id="path6" />
+    </marker>
+    <marker
+       id="arr-orange"
+       markerWidth="8"
+       markerHeight="8"
+       refX="6"
+       refY="3"
+       orient="auto">
+      <path
+         d="M0,0 L0,6 L8,3 z"
+         fill="#f97316"
+         id="path7" />
+    </marker>
+    <marker
+       id="arr-pink"
+       markerWidth="8"
+       markerHeight="8"
+       refX="6"
+       refY="3"
+       orient="auto">
+      <path
+         d="M0,0 L0,6 L8,3 z"
+         fill="#ec4899"
+         id="path8" />
+    </marker>
+    <marker
+       id="arr-wg"
+       markerWidth="8"
+       markerHeight="8"
+       refX="6"
+       refY="3"
+       orient="auto">
+      <path
+         d="M0,0 L0,6 L8,3 z"
+         fill="#a78bfa"
+         id="path9" />
+    </marker>
+    <marker
+       id="arr-pink-4"
+       markerWidth="8"
+       markerHeight="8"
+       refX="6"
+       refY="3"
+       orient="auto">
+      <path
+         d="M 0,0 V 6 L 8,3 Z"
+         fill="#ec4899"
+         id="path8-5" />
+    </marker>
+    <marker
+       id="arr-pink-7"
+       markerWidth="8"
+       markerHeight="8"
+       refX="6"
+       refY="3"
+       orient="auto">
+      <path
+         d="M 0,0 V 6 L 8,3 Z"
+         fill="#ec4899"
+         id="path8-1" />
+    </marker>
+    <marker
+       id="arr-pink-2"
+       markerWidth="8"
+       markerHeight="8"
+       refX="6"
+       refY="3"
+       orient="auto">
+      <path
+         d="M 0,0 V 6 L 8,3 Z"
+         fill="#ec4899"
+         id="path8-7" />
+    </marker>
+  </defs>
+  <!-- Background -->
+  <rect
+     width="1200"
+     height="1020"
+     fill="#0f1117"
+     id="rect9" />
+  <!-- Title -->
+  <text
+     x="600"
+     y="36"
+     text-anchor="middle"
+     fill="#e2e8f0"
+     font-size="20"
+     font-weight="bold"
+     letter-spacing="1"
+     id="text9">Video Security System — Capture &amp; Detection Architecture</text>
+  <line
+     x1="60"
+     y1="46"
+     x2="1140"
+     y2="46"
+     stroke="#334155"
+     stroke-width="1"
+     id="line9" />
+  <!-- ═══════════════════════════════════════
+       CAMERAS
+  ════════════════════════════════════════ -->
+  <rect
+     x="59.776089"
+     y="57.776089"
+     width="529.02966"
+     height="100.44782"
+     rx="4.8984227"
+     fill="#1e293b"
+     stroke="#334155"
+     stroke-width="1.05218"
+     id="rect10" />
+  <text
+     x="80"
+     y="78"
+     fill="#94a3b8"
+     font-size="11"
+     font-weight="bold"
+     letter-spacing="1.5"
+     id="text10">CAMERAS</text>
+  <!-- NVR cameras group -->
+  <rect
+     x="100"
+     y="86"
+     width="260"
+     height="58"
+     rx="6"
+     fill="#0d1f38"
+     stroke="#1e40af"
+     stroke-width="1"
+     stroke-dasharray="4,2"
+     id="rect11" />
+  <text
+     x="230"
+     y="100"
+     text-anchor="middle"
+     fill="#475569"
+     font-size="8"
+     font-style="italic"
+     id="text11">NVR-managed</text>
+  <rect
+     x="108"
+     y="104"
+     width="110"
+     height="32"
+     rx="6"
+     fill="#0f2744"
+     stroke="#3b82f6"
+     stroke-width="1.5"
+     id="rect12" />
+  <text
+     x="163"
+     y="118"
+     text-anchor="middle"
+     fill="#93c5fd"
+     font-size="11"
+     font-weight="bold"
+     id="text12">WiFi Camera ×1</text>
+  <text
+     x="163"
+     y="130"
+     text-anchor="middle"
+     fill="#64748b"
+     font-size="9"
+     id="text13">→ NVR</text>
+  <rect
+     x="232"
+     y="104"
+     width="120"
+     height="32"
+     rx="6"
+     fill="#0f2744"
+     stroke="#3b82f6"
+     stroke-width="1.5"
+     id="rect13" />
+  <text
+     x="292"
+     y="118"
+     text-anchor="middle"
+     fill="#93c5fd"
+     font-size="11"
+     font-weight="bold"
+     id="text14">POE Cameras ×6</text>
+  <text
+     x="292"
+     y="130"
+     text-anchor="middle"
+     fill="#64748b"
+     font-size="9"
+     id="text15">→ NVR</text>
+  <!-- Direct RTSP camera -->
+  <rect
+     x="390"
+     y="86"
+     width="160"
+     height="58"
+     rx="6"
+     fill="#0f2744"
+     stroke="#6366f1"
+     stroke-width="1.5"
+     id="rect15" />
+  <text
+     x="470"
+     y="103"
+     text-anchor="middle"
+     fill="#a5b4fc"
+     font-size="11"
+     font-weight="bold"
+     id="text16">RTSP Camera</text>
+  <text
+     x="470"
+     y="118"
+     text-anchor="middle"
+     fill="#94a3b8"
+     font-size="9"
+     id="text17">dedicated stream</text>
+  <text
+     x="470"
+     y="131"
+     text-anchor="middle"
+     fill="#475569"
+     font-size="8"
+     font-style="italic"
+     id="text18">→ cam_detectd direct</text>
+  <!-- Camera arrows -->
+  <line
+     x1="230"
+     y1="158"
+     x2="230"
+     y2="191.25819"
+     stroke="#3b82f6"
+     stroke-width="1.44175"
+     stroke-dasharray="4, 3"
+     marker-end="url(#arr-blue)"
+     id="line18" />
+  <text
+     x="248"
+     y="180"
+     fill="#3b82f6"
+     font-size="9"
+     id="text19">HTTP / RTSP</text>
+  <text
+     x="476.1188"
+     y="232.07921"
+     fill="#6366f1"
+     font-size="9px"
+     id="text20">RTSP direct</text>
+  <!-- ═══════════════════════════════════════
+       NVR
+  ════════════════════════════════════════ -->
+  <rect
+     x="120"
+     y="194"
+     width="220"
+     height="66"
+     rx="10"
+     fill="#172032"
+     stroke="#2563eb"
+     stroke-width="2"
+     id="rect20" />
+  <text
+     x="230"
+     y="216"
+     text-anchor="middle"
+     fill="#60a5fa"
+     font-size="13"
+     font-weight="bold"
+     id="text21">Primary NVR</text>
+  <text
+     x="230"
+     y="232"
+     text-anchor="middle"
+     fill="#94a3b8"
+     font-size="10"
+     id="text22">HTTP frame API  •  RTSP streams</text>
+  <text
+     x="230"
+     y="246"
+     text-anchor="middle"
+     fill="#64748b"
+     font-size="9"
+     id="text23">1 WiFi  +  6 POE channels</text>
+  <!-- NVR → nvr_detectd -->
+  <text
+     x="188"
+     y="298"
+     fill="#4b5563"
+     font-size="9"
+     id="text24">HTTP frames</text>
+  <!-- ═══════════════════════════════════════
+       LINUX SERVER
+  ════════════════════════════════════════ -->
+  <rect
+     x="60"
+     y="288"
+     width="1080"
+     height="508"
+     rx="12"
+     fill="#111827"
+     stroke="#1d4ed8"
+     stroke-width="2"
+     id="rect24"
+     style="paint-order:fill markers stroke" />
+  <text
+     x="88"
+     y="310"
+     fill="#3b82f6"
+     font-size="12"
+     font-weight="bold"
+     letter-spacing="1.5"
+     id="text25">LINUX SERVER</text>
+  <!-- systemd badge -->
+  <rect
+     x="880"
+     y="297"
+     width="72"
+     height="16"
+     rx="4"
+     fill="#1e1b4b"
+     stroke="#4338ca"
+     stroke-width="1"
+     id="rect25" />
+  <text
+     x="916"
+     y="307.14545"
+     text-anchor="middle"
+     fill="#818cf8"
+     font-size="8px"
+     font-weight="bold"
+     id="text26">systemd managed</text>
+  <!-- ── nvr_detectd ── -->
+  <rect
+     x="88"
+     y="322"
+     width="210"
+     height="86"
+     rx="8"
+     fill="#1a2540"
+     stroke="#6366f1"
+     stroke-width="1.5"
+     id="rect26" />
+  <!-- systemd pill -->
+  <line
+     x1="470"
+     y1="144"
+     x2="470"
+     y2="319.20279"
+     stroke="#6366f1"
+     stroke-width="1.4677"
+     stroke-dasharray="4, 3"
+     marker-end="url(#arr-violet)"
+     id="line19"
+     style="paint-order:normal" />
+  <rect
+     x="94"
+     y="328"
+     width="52"
+     height="13"
+     rx="3"
+     fill="#1e1b4b"
+     stroke="#4338ca"
+     stroke-width="1"
+     id="rect27" />
+  <text
+     x="119.69091"
+     y="336.76364"
+     text-anchor="middle"
+     fill="#818cf8"
+     font-size="7.5px"
+     id="text27">systemd</text>
+  <text
+     x="193"
+     y="340"
+     text-anchor="middle"
+     fill="#a5b4fc"
+     font-size="12"
+     font-weight="bold"
+     id="text28">nvr_detectd</text>
+  <text
+     x="193"
+     y="356"
+     text-anchor="middle"
+     fill="#94a3b8"
+     font-size="10"
+     id="text29">HTTP polls NVR for frames</text>
+  <text
+     x="193"
+     y="370"
+     text-anchor="middle"
+     fill="#64748b"
+     font-size="9"
+     id="text30">as fast as NVR can serve</text>
+  <text
+     x="193"
+     y="384"
+     text-anchor="middle"
+     fill="#475569"
+     font-size="8"
+     font-style="italic"
+     id="text31">NVR cameras only — no RTSP overlap</text>
+  <text
+     x="193"
+     y="396"
+     text-anchor="middle"
+     fill="#1d4ed8"
+     font-size="8"
+     id="text32">↑ Restart=on-failure</text>
+  <!-- ── cam_detectd ── -->
+  <rect
+     x="328"
+     y="322"
+     width="220"
+     height="86"
+     rx="8"
+     fill="#1a2540"
+     stroke="#6366f1"
+     stroke-width="1.5"
+     id="rect32" />
+  <rect
+     x="334"
+     y="328"
+     width="52"
+     height="13"
+     rx="3"
+     fill="#1e1b4b"
+     stroke="#4338ca"
+     stroke-width="1"
+     id="rect33" />
+  <text
+     x="360.30908"
+     y="336.45456"
+     text-anchor="middle"
+     fill="#818cf8"
+     font-size="7.5px"
+     id="text33">systemd</text>
+  <text
+     x="438"
+     y="340"
+     text-anchor="middle"
+     fill="#a5b4fc"
+     font-size="12"
+     font-weight="bold"
+     id="text34">cam_detectd</text>
+  <text
+     x="438"
+     y="356"
+     text-anchor="middle"
+     fill="#94a3b8"
+     font-size="10"
+     id="text35">ffmpeg → RTSP → single JPEG</text>
+  <text
+     x="438"
+     y="370"
+     text-anchor="middle"
+     fill="#64748b"
+     font-size="9"
+     id="text36">writes to /dev/shm @ 5 fps</text>
+  <text
+     x="438"
+     y="384"
+     text-anchor="middle"
+     fill="#475569"
+     font-size="8"
+     font-style="italic"
+     id="text37">dedicated camera — no NVR overlap</text>
+  <text
+     x="438"
+     y="396"
+     text-anchor="middle"
+     fill="#1d4ed8"
+     font-size="8"
+     id="text38">↑ Restart=on-failure</text>
+  <!-- ── siyolo ── -->
+  <rect
+     x="750"
+     y="322"
+     width="340"
+     height="86"
+     rx="8"
+     fill="#1c2535"
+     stroke="#f59e0b"
+     stroke-width="2"
+     id="rect38" />
+  <rect
+     x="756"
+     y="328"
+     width="52"
+     height="13"
+     rx="3"
+     fill="#1e1b4b"
+     stroke="#4338ca"
+     stroke-width="1"
+     id="rect39" />
+  <text
+     x="781.69092"
+     y="336.76364"
+     text-anchor="middle"
+     fill="#818cf8"
+     font-size="7.5px"
+     id="text39">systemd</text>
+  <!-- CUDA badge -->
+  <rect
+     x="1020"
+     y="326"
+     width="62"
+     height="16"
+     rx="4"
+     fill="#052e16"
+     stroke="#16a34a"
+     stroke-width="1"
+     id="rect40" />
+  <text
+     x="1051"
+     y="337"
+     text-anchor="middle"
+     fill="#4ade80"
+     font-size="8"
+     font-weight="bold"
+     id="text40">CUDA GPU</text>
+  <text
+     x="920"
+     y="340"
+     text-anchor="middle"
+     fill="#fcd34d"
+     font-size="12"
+     font-weight="bold"
+     id="text41">siyolo  (YOLOv26 inference)</text>
+  <text
+     x="920"
+     y="357"
+     text-anchor="middle"
+     fill="#94a3b8"
+     font-size="10"
+     id="text42">HTTP inference server</text>
+  <text
+     x="920"
+     y="371"
+     text-anchor="middle"
+     fill="#64748b"
+     font-size="9"
+     id="text43">returns objects + bounding boxes</text>
+  <text
+     x="920"
+     y="397"
+     text-anchor="middle"
+     fill="#1d4ed8"
+     font-size="8"
+     id="text45">↑ Restart=on-failure</text>
+  <!-- nvr_detectd + cam_detectd → siyolo (Y-merge, single arrow) -->
+  <!-- branch from nvr_detectd bottom -->
+  <polyline
+     points="193,408 193,422 438,422"
+     fill="none"
+     stroke="#f59e0b"
+     stroke-width="1.5"
+     stroke-dasharray="5,3"
+     id="polyline45" />
+  <!-- branch from cam_detectd bottom -->
+  <polyline
+     points="438,408 438,422"
+     fill="none"
+     stroke="#f59e0b"
+     stroke-width="1.5"
+     stroke-dasharray="5,3"
+     id="polyline46" />
+  <!-- single stem → siyolo -->
+  <polyline
+     points="438,422 744,422 744,365 750,365"
+     fill="none"
+     stroke="#f59e0b"
+     stroke-width="1.5"
+     stroke-dasharray="5, 3"
+     marker-end="url(#arr-amber)"
+     id="polyline47"
+     transform="matrix(0.98892705,0,0,1.0003657,4.8612681,-0.14320621)" />
+  <text
+     x="616.31683"
+     y="415.50494"
+     fill="#f59e0b"
+     font-size="9px"
+     text-anchor="middle"
+     id="text47">HTTP frame submit</text>
+  <!-- siyolo → detection logic -->
+  <text
+     x="813.66187"
+     y="432.5871"
+     fill="#c4b5fd"
+     font-size="9px"
+     text-anchor="middle"
+     id="text48">objects + boxes</text>
+  <!-- ── Detection Logic ── -->
+  <rect
+     x="88"
+     y="432"
+     width="610"
+     height="106"
+     rx="8"
+     fill="#1a1a2e"
+     stroke="#7c3aed"
+     stroke-width="1.5"
+     id="rect48" />
+  <text
+     x="393"
+     y="452"
+     text-anchor="middle"
+     fill="#c4b5fd"
+     font-size="12"
+     font-weight="bold"
+     id="text49">Detection Logic  (nvr_detectd &amp; cam_detectd — independent per camera)</text>
+  <line
+     x1="291"
+     y1="460"
+     x2="291"
+     y2="530"
+     stroke="#4b5563"
+     stroke-width="1"
+     stroke-dasharray="3,3"
+     id="line49" />
+  <rect
+     x="770"
+     y="444"
+     width="210"
+     height="80"
+     rx="8"
+     fill="#1f1410"
+     stroke="#f97316"
+     stroke-width="2"
+     id="rect96"
+     style="display:inline" />
+  <line
+     x1="494"
+     y1="460"
+     x2="494"
+     y2="530"
+     stroke="#4b5563"
+     stroke-width="1"
+     stroke-dasharray="3,3"
+     id="line50" />
+  <rect
+     x="775.48181"
+     y="450.31818"
+     width="52"
+     height="13"
+     rx="3"
+     fill="#1e1b4b"
+     stroke="#4338ca"
+     stroke-width="1"
+     id="rect33-9"
+     style="display:inline" />
+  <text
+     x="800.86365"
+     y="459.08182"
+     text-anchor="middle"
+     fill="#818cf8"
+     font-size="7.5px"
+     id="text33-4"
+     style="display:inline">systemd</text>
+  <text
+     x="190"
+     y="474"
+     text-anchor="middle"
+     fill="#94a3b8"
+     font-size="10"
+     font-weight="bold"
+     id="text50">Zone Masking</text>
+  <text
+     x="190"
+     y="488"
+     text-anchor="middle"
+     fill="#64748b"
+     font-size="9"
+     id="text51">Rectangular regions</text>
+  <text
+     x="190"
+     y="501"
+     text-anchor="middle"
+     fill="#64748b"
+     font-size="9"
+     id="text52">Triangular regions</text>
+  <text
+     x="190"
+     y="514"
+     text-anchor="middle"
+     fill="#64748b"
+     font-size="9"
+     id="text53">Object size min/max filter</text>
+  <text
+     x="190"
+     y="527"
+     text-anchor="middle"
+     fill="#475569"
+     font-size="8"
+     font-style="italic"
+     id="text54">per-camera config</text>
+  <text
+     x="392"
+     y="474"
+     text-anchor="middle"
+     fill="#94a3b8"
+     font-size="10"
+     font-weight="bold"
+     id="text55">Object Filter</text>
+  <text
+     x="392"
+     y="488"
+     text-anchor="middle"
+     fill="#64748b"
+     font-size="9"
+     id="text56">Specified classes only</text>
+  <text
+     x="392"
+     y="501"
+     text-anchor="middle"
+     fill="#64748b"
+     font-size="9"
+     id="text57">(e.g. person, vehicle)</text>
+  <text
+     x="392"
+     y="514"
+     text-anchor="middle"
+     fill="#64748b"
+     font-size="9"
+     id="text58">Confidence threshold</text>
+  <text
+     x="392"
+     y="527"
+     text-anchor="middle"
+     fill="#475569"
+     font-size="8"
+     font-style="italic"
+     id="text59">per-camera config</text>
+  <text
+     x="596"
+     y="474"
+     text-anchor="middle"
+     fill="#94a3b8"
+     font-size="10"
+     font-weight="bold"
+     id="text60">Alert Throttle</text>
+  <text
+     x="596"
+     y="488"
+     text-anchor="middle"
+     fill="#64748b"
+     font-size="9"
+     id="text61">NTFY push — per camera</text>
+  <text
+     x="596"
+     y="501"
+     text-anchor="middle"
+     fill="#64748b"
+     font-size="9px"
+     id="text62"><tspan
+       sodipodi:role="line"
+       id="tspan131"
+       x="596"
+       y="501">≤ once per 5 min</tspan><tspan
+       sodipodi:role="line"
+       id="tspan132"
+       x="596"
+       y="512.25" /></text>
+  <text
+     x="596"
+     y="514"
+     text-anchor="middle"
+     fill="#64748b"
+     font-size="9px"
+     id="text63"><tspan
+       sodipodi:role="line"
+       x="596"
+       y="514"
+       id="tspan135">Prevents NTFY spamming</tspan></text>
+  <!-- Detection logic → /dev/shm -->
+  <line
+     x1="393"
+     y1="538"
+     x2="393"
+     y2="568.36072"
+     stroke="#10b981"
+     stroke-width="1.41745"
+     marker-end="url(#arr-green)"
+     id="line64" />
+  <text
+     x="396.89331"
+     y="552.56897"
+     fill="#10b981"
+     font-size="9px"
+     id="text65">annotated image (text + bboxes)</text>
+  <!-- Detection logic → NTFY (HTTP, with gap) -->
+  <line
+     x1="698"
+     y1="484"
+     x2="767.1485"
+     y2="484"
+     stroke="#f97316"
+     stroke-width="1.47"
+     stroke-dasharray="5, 3"
+     marker-end="url(#arr-orange)"
+     id="line65" />
+  <text
+     x="734"
+     y="476"
+     fill="#f97316"
+     font-size="9"
+     text-anchor="middle"
+     id="text66">HTTP</text>
+  <text
+     x="734"
+     y="495"
+     fill="#f97316"
+     font-size="8"
+     text-anchor="middle"
+     id="text67">push alert</text>
+  <!-- ── /dev/shm ── -->
+  <rect
+     x="268"
+     y="572"
+     width="330"
+     height="70"
+     rx="8"
+     fill="#132820"
+     stroke="#10b981"
+     stroke-width="2"
+     id="rect67" />
+  <text
+     x="430.81439"
+     y="589.75458"
+     text-anchor="middle"
+     fill="#34d399"
+     font-size="12px"
+     font-weight="bold"
+     id="text68">/dev/shm (RAM disk)</text>
+  <text
+     x="430.81439"
+     y="605.75458"
+     text-anchor="middle"
+     fill="#94a3b8"
+     font-size="10px"
+     id="text69">annotated captures • fast writes • minimal I/O</text>
+  <text
+     x="430.81439"
+     y="618.75458"
+     text-anchor="middle"
+     fill="#64748b"
+     font-size="9px"
+     id="text70">images &gt; 10 s old → moved to HDD</text>
+  <text
+     x="430.81439"
+     y="630.75458"
+     text-anchor="middle"
+     fill="#374151"
+     font-size="8px"
+     id="text71">2026-06-05_20-35-00.1780706100209-camera_0.jpg</text>
+  <!-- ── img_move ── -->
+  <rect
+     x="88"
+     y="662"
+     width="240"
+     height="80"
+     rx="8"
+     fill="#1a2018"
+     stroke="#4ade80"
+     stroke-width="1.5"
+     id="rect71" />
+  <rect
+     x="94"
+     y="668"
+     width="52"
+     height="13"
+     rx="3"
+     fill="#1e1b4b"
+     stroke="#4338ca"
+     stroke-width="1"
+     id="rect72" />
+  <text
+     x="120"
+     y="678"
+     text-anchor="middle"
+     fill="#818cf8"
+     font-size="7.5"
+     id="text72">systemd</text>
+  <text
+     x="208"
+     y="680"
+     text-anchor="middle"
+     fill="#86efac"
+     font-size="12"
+     font-weight="bold"
+     id="text73">img_move</text>
+  <text
+     x="208"
+     y="696"
+     text-anchor="middle"
+     fill="#94a3b8"
+     font-size="10"
+     id="text74">inotifywait watches /dev/shm</text>
+  <text
+     x="208"
+     y="710"
+     text-anchor="middle"
+     fill="#64748b"
+     font-size="9"
+     id="text75">blocks idle — zero I/O when quiet</text>
+  <text
+     x="208"
+     y="722"
+     text-anchor="middle"
+     fill="#64748b"
+     font-size="9"
+     id="text76">batches moves in background</text>
+  <text
+     x="208"
+     y="734"
+     text-anchor="middle"
+     fill="#1d4ed8"
+     font-size="8"
+     id="text77">↑ Restart=on-failure</text>
+  <!-- /dev/shm → img_move -->
+  <line
+     x1="338"
+     y1="642"
+     x2="268"
+     y2="662"
+     stroke="#4ade80"
+     stroke-width="1.5"
+     stroke-dasharray="4,3"
+     marker-end="url(#arr-lime)"
+     id="line77" />
+  <text
+     x="243.75247"
+     y="652.0495"
+     fill="#4ade80"
+     font-size="9px"
+     id="text78">inotify event</text>
+  <!-- ── HDD ── -->
+  <rect
+     x="368"
+     y="662"
+     width="240"
+     height="80"
+     rx="8"
+     fill="#1f1a10"
+     stroke="#f59e0b"
+     stroke-width="1.5"
+     id="rect78" />
+  <text
+     x="488"
+     y="691.93408"
+     text-anchor="middle"
+     fill="#fcd34d"
+     font-size="12px"
+     font-weight="bold"
+     id="text79">HDD — Long-term Store</text>
+  <text
+     x="488"
+     y="707.93408"
+     text-anchor="middle"
+     fill="#94a3b8"
+     font-size="10px"
+     id="text80">persistent annotated captures</text>
+  <text
+     x="488"
+     y="721.93408"
+     text-anchor="middle"
+     fill="#64748b"
+     font-size="9px"
+     id="text81">historical archive</text>
+  <!-- img_move → HDD -->
+  <line
+     x1="328"
+     y1="702"
+     x2="364.77643"
+     y2="702"
+     stroke="#f59e0b"
+     stroke-width="1.43829"
+     marker-end="url(#arr-amber)"
+     id="line82" />
+  <text
+     x="335.14853"
+     y="695.97028"
+     fill="#f59e0b"
+     font-size="9px"
+     id="text83">move</text>
+  <!-- ── nginx ── -->
+  <rect
+     x="688"
+     y="572"
+     width="400"
+     height="168"
+     rx="8"
+     fill="#1a1018"
+     stroke="#ec4899"
+     stroke-width="1.5"
+     id="rect83" />
+  <line
+     x1="608.58734"
+     y1="706.47107"
+     x2="716.58734"
+     y2="720.47107"
+     stroke="#ec4899"
+     stroke-width="1.5"
+     stroke-dasharray="4, 3"
+     marker-end="url(#arr-pink-2)"
+     id="line94-1"
+     style="marker-end:url(#arr-pink-2)" />
+  <rect
+     x="695.33636"
+     y="577.80908"
+     width="52"
+     height="13"
+     rx="3"
+     fill="#1e1b4b"
+     stroke="#4338ca"
+     stroke-width="1"
+     id="rect33-9-8"
+     style="display:inline" />
+  <text
+     x="721.02728"
+     y="586.57269"
+     text-anchor="middle"
+     fill="#818cf8"
+     font-size="7.5px"
+     id="text33-4-2"
+     style="display:inline">systemd</text>
+  <text
+     x="887.56287"
+     y="588.75458"
+     text-anchor="middle"
+     fill="#f9a8d4"
+     font-size="12px"
+     font-weight="bold"
+     id="text84">nginx</text>
+  <rect
+     x="706"
+     y="602"
+     width="172"
+     height="56"
+     rx="6"
+     fill="#2a1a28"
+     stroke="#9d174d"
+     stroke-width="1"
+     id="rect84" />
+  <text
+     x="791.12573"
+     y="618.06592"
+     text-anchor="middle"
+     fill="#f9a8d4"
+     font-size="10px"
+     font-weight="bold"
+     id="text85">Snapshot Endpoint</text>
+  <text
+     x="791.12573"
+     y="633.06592"
+     text-anchor="middle"
+     fill="#64748b"
+     font-size="9px"
+     id="text86">checks /dev/shm first</text>
+  <text
+     x="791.12573"
+     y="646.06592"
+     text-anchor="middle"
+     fill="#64748b"
+     font-size="9px"
+     id="text87">HDD fallback if client polls slow</text>
+  <rect
+     x="896"
+     y="602"
+     width="172"
+     height="56"
+     rx="6"
+     fill="#2a1a28"
+     stroke="#9d174d"
+     stroke-width="1"
+     id="rect87" />
+  <text
+     x="981.12573"
+     y="618.06592"
+     text-anchor="middle"
+     fill="#f9a8d4"
+     font-size="10px"
+     font-weight="bold"
+     id="text88">Historical UI</text>
+  <text
+     x="981.12573"
+     y="633.06592"
+     text-anchor="middle"
+     fill="#64748b"
+     font-size="9px"
+     id="text89">PhotoSwipe JS gallery</text>
+  <text
+     x="981.12573"
+     y="646.06592"
+     text-anchor="middle"
+     fill="#64748b"
+     font-size="9px"
+     id="text90">serves full HDD archive</text>
+  <text
+     x="888"
+     y="682"
+     text-anchor="middle"
+     fill="#475569"
+     font-size="9"
+     id="text91">serves clients via WireGuard tunnel</text>
+  <text
+     x="888"
+     y="696"
+     text-anchor="middle"
+     fill="#374151"
+     font-size="8"
+     id="text92">no public internet exposure</text>
+  <text
+     x="888"
+     y="710"
+     text-anchor="middle"
+     fill="#374151"
+     font-size="8"
+     id="text93">all requests arrive as local LAN</text>
+  <text
+     x="888"
+     y="724"
+     text-anchor="middle"
+     fill="#374151"
+     font-size="8"
+     id="text94">via WireGuard virtual interface</text>
+  <!-- /dev/shm → nginx -->
+  <line
+     x1="598"
+     y1="604"
+     x2="706"
+     y2="618"
+     stroke="#ec4899"
+     stroke-width="1.5"
+     stroke-dasharray="4,3"
+     marker-end="url(#arr-pink)"
+     id="line94" />
+  <text
+     x="633.64355"
+     y="601.02972"
+     fill="#ec4899"
+     font-size="9px"
+     text-anchor="middle"
+     id="text95">/dev/shm</text>
+  <!-- HDD → nginx -->
+  <text
+     x="764.71649"
+     y="723.35803"
+     fill="#ec4899"
+     font-size="9px"
+     text-anchor="middle"
+     id="text96">HDD fallback / history</text>
+  <!-- ── NTFY ── -->
+  <text
+     x="874.50494"
+     y="458.57425"
+     text-anchor="middle"
+     fill="#fb923c"
+     font-size="12px"
+     font-weight="bold"
+     id="text97">NTFY (local)</text>
+  <text
+     x="874.50494"
+     y="474.57425"
+     text-anchor="middle"
+     fill="#94a3b8"
+     font-size="10px"
+     id="text98">on-premises push service</text>
+  <text
+     x="874.50494"
+     y="488.57425"
+     text-anchor="middle"
+     fill="#64748b"
+     font-size="9px"
+     id="text99">≤ once per 5 min — per camera</text>
+  <text
+     x="874.50494"
+     y="502.57425"
+     text-anchor="middle"
+     fill="#64748b"
+     font-size="9px"
+     id="text100">independent throttle per channel</text>
+  <text
+     x="874.50494"
+     y="514.57428"
+     text-anchor="middle"
+     fill="#475569"
+     font-size="8px"
+     id="text101">no cloud relay — local LAN only</text>
+  <!-- ═══════════════════════════════════════
+       WIREGUARD TUNNEL BAND
+  ════════════════════════════════════════ -->
+  <rect
+     x="60"
+     y="808"
+     width="1080"
+     height="32"
+     rx="6"
+     fill="#1a1330"
+     stroke="#7c3aed"
+     stroke-width="1.5"
+     stroke-dasharray="6,3"
+     id="rect101" />
+  <text
+     x="600"
+     y="829"
+     text-anchor="middle"
+     fill="#a78bfa"
+     font-size="11"
+     font-weight="bold"
+     letter-spacing="2"
+     id="text102">⟵  WireGuard VPN Tunnel  —  Persistent  •  Keepalive Enabled  •  Fully Localized  •  No Cloud  ⟶</text>
+  <!-- NTFY → WireGuard band (routed left of nginx) -->
+  <polyline
+     points="875,524 875,550 660,550 660,808"
+     fill="none"
+     stroke="#f97316"
+     stroke-width="1.5"
+     stroke-dasharray="5, 3"
+     marker-end="url(#arr-orange)"
+     id="polyline102"
+     transform="matrix(1.0001268,0,0,0.9861041,-0.09706707,7.295315)" />
+  <text
+     x="-664.25745"
+     y="670.15839"
+     fill="#f97316"
+     font-size="9px"
+     text-anchor="middle"
+     transform="rotate(-90)"
+     id="text103">NTFY (WireGuard)</text>
+  <!-- nginx → WireGuard band -->
+  <line
+     x1="919.97748"
+     y1="739.98651"
+     x2="958.56824"
+     y2="805.61517"
+     stroke="#ec4899"
+     stroke-width="1.44742"
+     stroke-dasharray="4, 3"
+     marker-end="url(#arr-pink)"
+     id="line103" />
+  <!-- ═══════════════════════════════════════
+       CLIENT ZONE
+  ════════════════════════════════════════ -->
+  <rect
+     x="60"
+     y="848"
+     width="1080"
+     height="148"
+     rx="10"
+     fill="#111827"
+     stroke="#6b7280"
+     stroke-width="1.5"
+     id="rect103" />
+  <text
+     x="1120"
+     y="868"
+     text-anchor="end"
+     fill="#94a3b8"
+     font-size="11"
+     font-weight="bold"
+     letter-spacing="1.5"
+     id="text104">REMOTE CLIENTS  (phones / tablets)</text>
+  <text
+     x="1120"
+     y="882"
+     text-anchor="end"
+     fill="#475569"
+     font-size="9"
+     id="text105">All connections arrive as local LAN traffic via WireGuard virtual interface — server has no awareness of remote</text>
+  <!-- Phone: NTFY -->
+  <rect
+     x="88"
+     y="890"
+     width="180"
+     height="88"
+     rx="8"
+     fill="#1a1a2a"
+     stroke="#a78bfa"
+     stroke-width="1.5"
+     id="rect105" />
+  <text
+     x="178"
+     y="910"
+     text-anchor="middle"
+     fill="#c4b5fd"
+     font-size="11"
+     font-weight="bold"
+     id="text106">Phone / Tablet</text>
+  <text
+     x="178"
+     y="926"
+     text-anchor="middle"
+     fill="#fb923c"
+     font-size="10"
+     id="text107">NTFY app</text>
+  <text
+     x="178"
+     y="941"
+     text-anchor="middle"
+     fill="#64748b"
+     font-size="9"
+     id="text108">receives local push alerts</text>
+  <text
+     x="178"
+     y="955"
+     text-anchor="middle"
+     fill="#64748b"
+     font-size="9"
+     id="text109">per-camera notification stream</text>
+  <text
+     x="178"
+     y="970"
+     text-anchor="middle"
+     fill="#4c1d95"
+     font-size="8px"
+     id="text110">WireGuard peer</text>
+  <!-- Phone: snapshot -->
+  <rect
+     x="298"
+     y="890"
+     width="200"
+     height="88"
+     rx="8"
+     fill="#1a1a2a"
+     stroke="#a78bfa"
+     stroke-width="1.5"
+     id="rect110" />
+  <text
+     x="398"
+     y="910"
+     text-anchor="middle"
+     fill="#c4b5fd"
+     font-size="11"
+     font-weight="bold"
+     id="text111">Phone / Tablet</text>
+  <text
+     x="398"
+     y="926"
+     text-anchor="middle"
+     fill="#f9a8d4"
+     font-size="10"
+     id="text112">nginx snapshot endpoint</text>
+  <text
+     x="398"
+     y="941"
+     text-anchor="middle"
+     fill="#64748b"
+     font-size="9"
+     id="text113">pulls latest annotated capture</text>
+  <text
+     x="398"
+     y="955"
+     text-anchor="middle"
+     fill="#64748b"
+     font-size="9"
+     id="text114">via HTTP over WireGuard</text>
+  <text
+     x="398"
+     y="970"
+     text-anchor="middle"
+     fill="#4c1d95"
+     font-size="8px"
+     id="text115"><tspan
+       sodipodi:role="line"
+       id="tspan127"
+       x="398"
+       y="970">WireGuard peer</tspan><tspan
+       sodipodi:role="line"
+       id="tspan128"
+       x="398"
+       y="980" /></text>
+  <!-- Phone: gallery -->
+  <rect
+     x="528"
+     y="890"
+     width="200"
+     height="88"
+     rx="8"
+     fill="#1a1a2a"
+     stroke="#a78bfa"
+     stroke-width="1.5"
+     id="rect115" />
+  <text
+     x="628"
+     y="910"
+     text-anchor="middle"
+     fill="#c4b5fd"
+     font-size="11"
+     font-weight="bold"
+     id="text116">Phone / Tablet</text>
+  <text
+     x="628"
+     y="926"
+     text-anchor="middle"
+     fill="#f9a8d4"
+     font-size="10"
+     id="text117">nginx PhotoSwipe gallery</text>
+  <text
+     x="628"
+     y="941"
+     text-anchor="middle"
+     fill="#64748b"
+     font-size="9"
+     id="text118">browses full HDD archive</text>
+  <text
+     x="628"
+     y="955"
+     text-anchor="middle"
+     fill="#64748b"
+     font-size="9"
+     id="text119">via HTTP over WireGuard</text>
+  <text
+     x="628"
+     y="970"
+     text-anchor="middle"
+     fill="#4c1d95"
+     font-size="8px"
+     id="text120"><tspan
+       sodipodi:role="line"
+       id="tspan129"
+       x="628"
+       y="970">WireGuard peer</tspan><tspan
+       sodipodi:role="line"
+       id="tspan130"
+       x="628"
+       y="980" /></text>
+  <!-- WireGuard info box -->
+  <rect
+     x="778"
+     y="890"
+     width="322"
+     height="88"
+     rx="8"
+     fill="#150f2a"
+     stroke="#4c1d95"
+     stroke-width="1.5"
+     id="rect120" />
+  <text
+     x="939"
+     y="910"
+     text-anchor="middle"
+     fill="#a78bfa"
+     font-size="11"
+     font-weight="bold"
+     id="text121">WireGuard  —  All Peers</text>
+  <text
+     x="939"
+     y="926"
+     text-anchor="middle"
+     fill="#94a3b8"
+     font-size="9"
+     id="text122">Persistent tunnels  •  PersistentKeepalive set</text>
+  <text
+     x="939"
+     y="941"
+     text-anchor="middle"
+     fill="#64748b"
+     font-size="9"
+     id="text123">Tunnel survives phone idle / NAT expiry</text>
+  <text
+     x="939"
+     y="956"
+     text-anchor="middle"
+     fill="#64748b"
+     font-size="9"
+     id="text124">All traffic on-premises  •  no cloud relay</text>
+  <line
+     x1="230.06998"
+     y1="260.06198"
+     x2="198.47369"
+     y2="319.29898"
+     stroke="#4b5563"
+     stroke-width="1.44746"
+     marker-end="url(#arr-gray)"
+     id="line23" />
+  <text
+     x="939"
+     y="971"
+     text-anchor="middle"
+     fill="#64748b"
+     font-size="9"
+     id="text125">Encrypted  •  Low latency  •  No public exposure</text>
+  <!-- WireGuard band → clients -->
+  <line
+     x1="178"
+     y1="840"
+     x2="178"
+     y2="889"
+     stroke="#a78bfa"
+     stroke-width="1.5"
+     marker-end="url(#arr-wg)"
+     id="line125" />
+  <line
+     x1="398"
+     y1="840"
+     x2="398"
+     y2="889"
+     stroke="#a78bfa"
+     stroke-width="1.5"
+     marker-end="url(#arr-wg)"
+     id="line126" />
+  <line
+     x1="628"
+     y1="840"
+     x2="628"
+     y2="889"
+     stroke="#a78bfa"
+     stroke-width="1.5"
+     marker-end="url(#arr-wg)"
+     id="line127" />
+  <path
+     style="fill:none;fill-rule:evenodd;stroke:#7c3aed;stroke-width:1.481;stroke-linecap:butt;stroke-linejoin:miter;stroke-dasharray:5.92399, 2.962;stroke-dashoffset:0;stroke-opacity:1;marker-start:url(#arr-violet)"
+     d="M 699.98522,460.90635 818.82707,410.39388"
+     id="path130"
+     inkscape:connector-type="polyline"
+     inkscape:connector-curvature="0" />
+</svg>

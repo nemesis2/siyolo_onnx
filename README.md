@@ -19,6 +19,12 @@ This is the ONNX version, smaller venv footprint and allows running newer models
 
 ---
 
+## Authors Architecture
+
+![Screenshot](/images/architecture_layout.svg "Architecture Layout Screenshot")
+
+---
+
 * Suitable for NVR and home automation
 * Minimal dependencies (no .NET or Docker required)
 * Fast startup with CUDA warm-up
