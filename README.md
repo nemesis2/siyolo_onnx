@@ -21,7 +21,7 @@ This is the ONNX version, smaller venv footprint and allows running newer models
 
 ## Authors Architecture
 
-![Screenshot](/images/architecture_layout.svg "Architecture Layout Screenshot")
+![Screenshot](/images/architecture_layout.jpg "Architecture Layout Screenshot")
 
 ---
 
