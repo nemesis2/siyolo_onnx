@@ -5,9 +5,9 @@
 #
 # https://github.com/nemesis2/siyolo
 # Released under the MIT License, see included LICENSE
-# Last Updated: 2026-03-02 -- By nemesis2
+# Last Updated: 2026-07-03 -- By nemesis2
 
-VERSION = "v2.1-onnx"
+VERSION = "v2.2-onnx"
 
 
 # Server configuration — all settings are overridable via environment variables
@@ -18,6 +18,7 @@ SERVER_LISTEN = os.environ.get("SERVER_LISTEN", "127.0.0.1")                # ip
 SERVER_PORT = int(os.environ.get("SERVER_PORT", 32168))                     # listening port (32168/5000)
 UVICORN_LOG = os.environ.get("UVICORN_LOG", "warning")                      # uvicorn log level (warning)
 MINIMUM_CONFIDENCE = float(os.environ.get("MINIMUM_CONFIDENCE", 0.65))      # default confidence if not set in post (0.65)
+NMS_IOU = float(os.environ.get("NMS_IOU", 0.45))                            # NMS IoU threshold for standard-format models (0.45)
 SERVER_MODEL = os.environ.get("YOLO_MODEL", "yolo26x.onnx")                 # YOLO ONNX model to use
 
 # Image target dimensions (Must match what the model was exported at!)
@@ -25,17 +26,19 @@ IMG_SZ_X = int(os.environ.get("IMG_SZ_X", 1152))                            # im
 IMG_SZ_Y = int(os.environ.get("IMG_SZ_Y", 640))                             # image height for inference; must be a multiple of 32!
 
 MAX_IMAGE_BYTES = int(os.environ.get("MAX_IMAGE_BYTES", 10 * 1024 * 1024))  # 10MB Max image size
-MAX_IMAGE_PIXELS = int(os.environ.get("MAX_IMAGE_PIXELS",40_000_000))       # ~200MP safety cap
+MAX_IMAGE_PIXELS = int(os.environ.get("MAX_IMAGE_PIXELS", 40_000_000))      # 40MP safety cap
 KEEPALIVE_TIMEOUT = int(os.environ.get("KEEPALIVE_TIMEOUT", 70))            # HTTP keep-alive idle timeout in seconds (70)
+INFER_CONCURRENCY = int(os.environ.get("INFER_CONCURRENCY", 2))             # max concurrent inference calls (2)
 
 # TensorRT / CoreML configuration
-TRT_FP16 = int(os.environ.get("TRT_FP16", 1))
+TRT_FP16 = os.environ.get("TRT_FP16", "1").strip().lower() in ("1", "true", "yes", "on")
 TRT_CACHE_DIR = os.environ.get("TRT_CACHE_DIR", "")                         # empty = use model directory
 WARMUP_RUNS = int(os.environ.get("WARMUP_RUNS", 5))                         # warm-up inference passes at startup
 
 
 import ast
 import sys
+import json
 import time
 import base64
 import asyncio
@@ -174,7 +177,41 @@ def decode_image(img_data: bytes) -> np.ndarray:
     return cv2.imdecode(nparr, cv2.IMREAD_COLOR)
 
 
-def letterbox(img: np.ndarray, new_shape=(IMG_SZ_X, IMG_SZ_Y), color=(114, 114, 114)) -> tuple:
+def parse_json_request(body: bytes, min_confidence: float) -> tuple:
+    """
+    Parse a JSON detection request body and decode its base64 image payload.
+    With a 10MB image the body is ~14MB of base64 inside JSON; json.loads and
+    b64decode are both CPU-bound at that size, so this runs in a thread via
+    asyncio.to_thread() (one hop for both) to avoid blocking the event loop.
+    Thread-safe: no shared state.
+    Returns (raw_image_bytes, min_confidence).
+    Raises HTTPException(400) on any validation failure.
+    """
+    body_json = json.loads(body)
+    if "image" not in body_json:
+        raise HTTPException(status_code=400, detail="Missing 'image' in JSON body")
+    # Override min_confidence from JSON body if provided, then re-validate.
+    # Re-validation is required because the form-level check in the endpoint
+    # only covers the multipart path; a JSON client can supply any float value.
+    try:
+        min_confidence = float(body_json.get("min_confidence", min_confidence))
+    except (TypeError, ValueError):
+        raise HTTPException(status_code=400, detail="Invalid min_confidence value")
+    if not (0.0 <= min_confidence <= 1.0):
+        raise HTTPException(status_code=400, detail="min_confidence must be between 0.0 and 1.0")
+    img_b64 = body_json["image"]
+    if not isinstance(img_b64, str):
+        raise HTTPException(status_code=400, detail="'image' must be a base64 string")
+    # Strip optional data URI prefix: "data:image/jpeg;base64,<data>"
+    if img_b64.startswith("data:"):
+        img_b64 = img_b64.split(",", 1)[1]
+    raw_data = base64.b64decode(img_b64, validate=True)
+    if not raw_data or len(raw_data) > MAX_IMAGE_BYTES:
+        raise HTTPException(status_code=400, detail="Invalid or oversized image")
+    return raw_data, min_confidence
+
+
+def letterbox(img: np.ndarray, new_shape: tuple, color=(114, 114, 114)) -> tuple:
     """
     Resize image to a 32-pixel-multiple rectangle, keeping aspect ratio,
     padding with gray to prevent accuracy-destroying squashing.
@@ -226,9 +263,10 @@ def detect_output_format(session: ort.InferenceSession) -> str:
     """
     Inspect the ONNX session's first output tensor shape and return the
     appropriate format constant.
-    Standard export: [1, 84+, N]  — raw candidates, needs filtering + NMS
-    E2E export:      [1, N, 6]    — pre-filtered, pre-NMS, ready to consume
-    Raises RuntimeError on unrecognised shapes so a bad model file is caught
+    Standard export: [1, 5+, N]  — raw candidates, needs filtering + NMS
+    E2E export:      [1, N, 6]   — pre-filtered, pre-NMS, ready to consume
+    Raises RuntimeError on unrecognised shapes (including dynamic-shape
+    exports where dims are None/strings) so a bad model file is caught
     at startup rather than silently producing wrong results at inference time.
     """
     shape = session.get_outputs()[0].shape
@@ -239,16 +277,78 @@ def detect_output_format(session: ort.InferenceSession) -> str:
         if isinstance(dim2, int) and dim2 == 6:  # some models can export dim2 as None
             logger.info("Detected end-to-end (E2E) ONNX format [1, N, 6] — NMS is embedded in model.")
             return FORMAT_E2E
-        # Standard format: second dim is attribute count (>=84 for 80-class COCO; allowing dim1 > 80 for
-        # broader compatibility), last dim is the candidate pool size (e.g. 8400 or 15120)
-        if isinstance(dim1, int) and isinstance(dim2, int) and dim1 >= 80 and dim2 > dim1:  # some models can export dim1/dim2 as None
+        # Standard format: second dim is the attribute count (4 box coords +
+        # at least 1 class score, so >= 5; 84 for 80-class COCO), last dim is
+        # the candidate pool size (e.g. 8400 or 15120)
+        if isinstance(dim1, int) and isinstance(dim2, int) and dim1 >= 5 and dim2 > dim1:  # some models can export dim1/dim2 as None
             logger.info("Detected standard ONNX format [1, attrs, N] — will apply confidence filtering + NMS.")
             return FORMAT_STANDARD
     raise RuntimeError(
         f"Unrecognised ONNX output shape {shape}. "
-        f"Expected [1, 84+, N] (standard) or [1, N, 6] (end-to-end). "
+        f"Expected [1, 5+, N] (standard) or [1, N, 6] (end-to-end). "
         f"Re-export your model or check your Ultralytics export options."
     )
+
+
+# Post-processing — shared tail
+def boxes_to_predictions(
+    boxes_xyxy: np.ndarray,
+    scores: np.ndarray,
+    class_ids: np.ndarray,
+    img_shape: tuple,
+    ratio: float,
+    pad: tuple,
+    names: dict
+) -> list:
+    """
+    Shared post-processing tail: map inference-space [x_min, y_min, x_max, y_max]
+    float boxes back to original image space and build the response dicts.
+    Steps:
+      1. Remove letterbox padding and rescale to original image dimensions.
+         pad is (left, top) — the integer pixel offsets returned by letterbox().
+      2. Clamp to image boundaries. Clamping uses w_orig / h_orig (not
+         w_orig-1 / h_orig-1) because x_max and y_max are exclusive boundaries —
+         a valid box touching the right or bottom edge of the image should have
+         x_max == w_orig, not w_orig-1. Clamping to w_orig-1 would cause those
+         boxes to fail the degenerate-box filter.
+      3. Discard degenerate boxes (zero-area after int truncation).
+      4. Build response dicts — Python loop unavoidable for named-key output.
+    Mutates boxes_xyxy in place; callers must pass a buffer they own.
+    """
+    h_orig, w_orig = img_shape[:2]
+
+    # Remove letterbox padding and rescale to original image dimensions.
+    # pad[0] = left offset (applied to x), pad[1] = top offset (applied to y).
+    boxes_xyxy[:, [0, 2]] = (boxes_xyxy[:, [0, 2]] - pad[0]) / ratio
+    boxes_xyxy[:, [1, 3]] = (boxes_xyxy[:, [1, 3]] - pad[1]) / ratio
+
+    # Clamp to image boundaries.
+    # x_min / y_min clamp to 0; x_max clamps to w_orig; y_max clamps to h_orig.
+    boxes_xyxy[:, 0] = np.clip(boxes_xyxy[:, 0], 0, w_orig)
+    boxes_xyxy[:, 1] = np.clip(boxes_xyxy[:, 1], 0, h_orig)
+    boxes_xyxy[:, 2] = np.clip(boxes_xyxy[:, 2], 0, w_orig)
+    boxes_xyxy[:, 3] = np.clip(boxes_xyxy[:, 3], 0, h_orig)
+    boxes_int = boxes_xyxy.astype(np.int32)
+
+    # Discard degenerate boxes (zero-area after int truncation)
+    valid     = (boxes_int[:, 2] > boxes_int[:, 0]) & (boxes_int[:, 3] > boxes_int[:, 1])
+    boxes_int = boxes_int[valid]
+    scores    = scores[valid]
+    class_ids = class_ids[valid]
+
+    predictions = []
+    for box, score, cls in zip(boxes_int, scores, class_ids):
+        cls_id = int(cls)
+        label  = names.get(cls_id, f"class_{cls_id}")
+        predictions.append({
+            "confidence": round(float(score), 4),
+            "label":      label,
+            "x_min":      int(box[0]),
+            "y_min":      int(box[1]),
+            "x_max":      int(box[2]),
+            "y_max":      int(box[3])
+        })
+    return predictions
 
 
 # Post-processing — end-to-end (E2E) format
@@ -264,57 +364,21 @@ def postprocess_e2e(
     Post-process an end-to-end [1, N, 6] ONNX model output.
     The model has already performed NMS internally. Each row contains:
       [x_min, y_min, x_max, y_max, confidence, class_id]
-    Coordinates are in inference-image space (IMG_SZ_X × IMG_SZ_Y). We subtract
-    the letterbox pad offsets (left, top) and divide by the scale ratio to map
-    coordinates back to the original image dimensions.
-    pad is (left, top) — the integer pixel offsets returned by letterbox().
-    Clamping uses w_orig / h_orig (not w_orig-1 / h_orig-1) because x_max and
-    y_max are exclusive boundaries — a valid box touching the right or bottom
-    edge of the image should have x_max == w_orig, not w_orig-1. Clamping to
-    w_orig-1 would cause those boxes to fail the degenerate-box filter.
+    Coordinates are in inference-image space (IMG_SZ_X × IMG_SZ_Y);
+    boxes_to_predictions() maps them back to original image space.
     """
-    h_orig, w_orig = img_shape[:2]
     detections = output_raw[0]  # [N, 6]
 
-    # Vectorized confidence filter — also eliminates NMS zero-padding rows
-    mask = detections[:, 4] >= min_confidence
+    # Vectorized confidence filter. The explicit > 0.0 term eliminates NMS
+    # zero-padding rows even when the caller passes min_confidence == 0.0.
+    conf = detections[:, 4]
+    mask = (conf > 0.0) & (conf >= min_confidence)
     filtered = detections[mask]
     if not filtered.size:
         return []
 
-    # Remove letterbox padding and rescale to original image dimensions.
-    # pad[0] = left offset (applied to x), pad[1] = top offset (applied to y).
-    coords = filtered[:, :4].copy()
-    coords[:, [0, 2]] = (coords[:, [0, 2]] - pad[0]) / ratio
-    coords[:, [1, 3]] = (coords[:, [1, 3]] - pad[1]) / ratio
-
-    # Clamp to image boundaries.
-    # x_min / y_min clamp to 0; x_max clamps to w_orig; y_max clamps to h_orig.
-    coords[:, 0] = np.clip(coords[:, 0], 0, w_orig)
-    coords[:, 1] = np.clip(coords[:, 1], 0, h_orig)
-    coords[:, 2] = np.clip(coords[:, 2], 0, w_orig)
-    coords[:, 3] = np.clip(coords[:, 3], 0, h_orig)
-    coords = coords.astype(np.int32)
-
-    # Discard degenerate boxes (zero-area after int truncation)
-    valid = (coords[:, 2] > coords[:, 0]) & (coords[:, 3] > coords[:, 1])
-    coords   = coords[valid]
-    filtered = filtered[valid]
-
-    # Build response dicts — Python loop unavoidable for named-key output
-    predictions = []
-    for box, det in zip(coords, filtered):
-        cls_id = int(det[5])
-        label  = names.get(cls_id, f"class_{cls_id}")
-        predictions.append({
-            "confidence": round(float(det[4]), 4),
-            "label":      label,
-            "x_min":      int(box[0]),
-            "y_min":      int(box[1]),
-            "x_max":      int(box[2]),
-            "y_max":      int(box[3])
-        })
-    return predictions
+    return boxes_to_predictions(filtered[:, :4].copy(), filtered[:, 4], filtered[:, 5],
+                                img_shape, ratio, pad, names)
 
 
 # Post-processing — standard format
@@ -332,14 +396,11 @@ def postprocess_standard(
       1. Transpose [1, attrs, N] -> [N, attrs]
       2. Vectorized confidence-threshold filter
       3. Convert [cx, cy, w, h] -> [x_min, y_min, w, h] for OpenCV NMS
-      4. OpenCV NMS (cv2.dnn.NMSBoxes) per class
+      4. Single-pass per-class NMS (cv2.dnn.NMSBoxes with class offsets)
       5. Convert survivors to [x_min, y_min, x_max, y_max]
-      6. Remove letterbox padding and rescale to original image dimensions
-      7. Clamp, filter degenerate boxes, build response dicts
+      6. Map back to original image space via boxes_to_predictions()
     pad is (left, top) — the integer pixel offsets returned by letterbox().
     """
-    h_orig, w_orig = img_shape[:2]
-
     # [1, attrs, N] -> [N, attrs]
     output    = output_raw[0].T
 
@@ -349,15 +410,16 @@ def postprocess_standard(
 
     # Detect whether objectness score exists.
     # 85+ attrs = YOLOv5-style with objectness; 84 = YOLOv8-style without.
+    # take_along_axis reuses the argmax result instead of a second full scan.
     if num_attrs >= 85:
         obj_conf    = output[:, 4]
         class_probs = output[:, 5:]
         class_ids   = np.argmax(class_probs, axis=1)
-        max_scores  = obj_conf * np.max(class_probs, axis=1)
+        max_scores  = obj_conf * np.take_along_axis(class_probs, class_ids[:, None], axis=1)[:, 0]
     else:
         class_probs = output[:, 4:]
         class_ids   = np.argmax(class_probs, axis=1)
-        max_scores  = np.max(class_probs, axis=1)
+        max_scores  = np.take_along_axis(class_probs, class_ids[:, None], axis=1)[:, 0]
 
     # Confidence filter — drop low-confidence candidates before NMS
     mask = max_scores >= min_confidence
@@ -365,7 +427,7 @@ def postprocess_standard(
         return []
 
     filtered_boxes  = raw_boxes[mask]
-    filtered_scores = max_scores[mask]
+    filtered_scores = max_scores[mask].astype(np.float32)
     class_ids       = class_ids[mask]
 
     # Convert [cx, cy, w, h] -> [x_min, y_min, w, h] for cv2.dnn.NMSBoxes
@@ -373,18 +435,15 @@ def postprocess_standard(
     x_min = x_c - (w_box / 2.0)
     y_min = y_c - (h_box / 2.0)
 
-    # Run OpenCV NMS per class — operates in inference-image space
-    keep_idx    = []
-    boxes_list  = np.stack([x_min, y_min, w_box, h_box], axis=1).tolist()
-    scores_list = filtered_scores.tolist()
-    for cls in np.unique(class_ids):
-        cls_indices = np.where(class_ids == cls)[0]
-        cls_boxes   = [boxes_list[i] for i in cls_indices]
-        cls_scores  = [scores_list[i] for i in cls_indices]
-        nms_keep = cv2.dnn.NMSBoxes(cls_boxes, cls_scores, 0.0, 0.45)
-        if len(nms_keep) > 0:
-            keep_idx.extend(cls_indices[nms_keep.flatten()])
-    keep_idx = np.array(keep_idx, dtype=int)
+    # Single-pass per-class NMS: shift each class's boxes by an offset larger
+    # than any possible coordinate so boxes of different classes can never
+    # overlap, letting one NMSBoxes call replace a per-class Python loop.
+    offset    = class_ids.astype(np.float32) * (4.0 * max(IMG_SZ_X, IMG_SZ_Y))
+    nms_boxes = np.stack([x_min + offset, y_min + offset, w_box, h_box], axis=1).astype(np.float32)
+    nms_keep  = cv2.dnn.NMSBoxes(nms_boxes, filtered_scores, 0.0, NMS_IOU)
+    if len(nms_keep) == 0:
+        return []
+    keep_idx = np.asarray(nms_keep, dtype=int).flatten()
 
     # Restore global confidence ordering
     order    = filtered_scores[keep_idx].argsort()[::-1]
@@ -398,41 +457,9 @@ def postprocess_standard(
     boxes_xyxy[:, 1] = kept[:, 1] - kept[:, 3] / 2   # y_min
     boxes_xyxy[:, 2] = kept[:, 0] + kept[:, 2] / 2   # x_max
     boxes_xyxy[:, 3] = kept[:, 1] + kept[:, 3] / 2   # y_max
-    final_scores  = filtered_scores[keep_idx]
-    final_classes = class_ids[keep_idx]
 
-    # Remove letterbox padding and rescale to original image dimensions.
-    # pad[0] = left offset (applied to x), pad[1] = top offset (applied to y).
-    boxes_xyxy[:, [0, 2]] = (boxes_xyxy[:, [0, 2]] - pad[0]) / ratio
-    boxes_xyxy[:, [1, 3]] = (boxes_xyxy[:, [1, 3]] - pad[1]) / ratio
-
-    # Clamp to image boundaries (x_max -> w_orig, y_max -> h_orig)
-    boxes_xyxy[:, 0] = np.clip(boxes_xyxy[:, 0], 0, w_orig)
-    boxes_xyxy[:, 1] = np.clip(boxes_xyxy[:, 1], 0, h_orig)
-    boxes_xyxy[:, 2] = np.clip(boxes_xyxy[:, 2], 0, w_orig)
-    boxes_xyxy[:, 3] = np.clip(boxes_xyxy[:, 3], 0, h_orig)
-    boxes_xyxy = boxes_xyxy.astype(np.int32)
-
-    # Discard degenerate boxes (zero-area after int truncation and clamping)
-    valid         = (boxes_xyxy[:, 2] > boxes_xyxy[:, 0]) & (boxes_xyxy[:, 3] > boxes_xyxy[:, 1])
-    boxes_xyxy    = boxes_xyxy[valid]
-    final_scores  = final_scores[valid]
-    final_classes = final_classes[valid]
-
-    # Build response dicts — Python loop unavoidable for named-key output
-    predictions = []
-    for i, box in enumerate(boxes_xyxy):
-        cls_id = int(final_classes[i])
-        label  = names.get(cls_id, f"class_{cls_id}")
-        predictions.append({
-            "confidence": round(float(final_scores[i]), 4),
-            "label":      label,
-            "x_min":      int(box[0]),
-            "y_min":      int(box[1]),
-            "x_max":      int(box[2]),
-            "y_max":      int(box[3])
-        })
-    return predictions
+    return boxes_to_predictions(boxes_xyxy, filtered_scores[keep_idx], class_ids[keep_idx],
+                                img_shape, ratio, pad, names)
 
 
 # Synchronous inference dispatcher
@@ -442,9 +469,9 @@ def run_inference_sync(app: FastAPI, img: np.ndarray, min_confidence: float) -> 
     Intended to be called via asyncio.to_thread() to avoid blocking the event loop.
     Pipeline:
       1. Letterbox: resize with aspect-ratio preservation, pad to IMG_SZ_X × IMG_SZ_Y
-      2. Convert to blob (BGR->RGB, normalize 0-255 -> 0.0-1.0, NCHW) via
-         cv2.dnn.blobFromImage — no size= argument since letterbox already produced
-         the correct dimensions, avoiding a redundant second resize.
+      2. Build the input blob directly: BGR->RGB channel reorder into a
+         preallocated NCHW float32 buffer, then one in-place /255 normalize
+         (no per-channel temporaries, no redundant second resize).
       3. Run ONNX session (thread-safe; no lock required)
       4. Route to appropriate post-processor with ratio + pad for coordinate inversion
     Timing:
@@ -457,10 +484,13 @@ def run_inference_sync(app: FastAPI, img: np.ndarray, min_confidence: float) -> 
     padded_img, ratio, pad = letterbox(img, new_shape=(IMG_SZ_X, IMG_SZ_Y))
 
     # Per-call buffer — must not be shared across concurrent requests (data race).
+    # uint8 channels are cast to float32 on assignment; the single in-place
+    # divide normalizes all channels without per-channel temporaries.
     buf = np.empty((1, 3, IMG_SZ_Y, IMG_SZ_X), dtype=np.float32)
-    buf[0, 0] = padded_img[:, :, 2].astype(np.float32) / 255.0  # R
-    buf[0, 1] = padded_img[:, :, 1].astype(np.float32) / 255.0  # G
-    buf[0, 2] = padded_img[:, :, 0].astype(np.float32) / 255.0  # B
+    buf[0, 0] = padded_img[:, :, 2]  # R
+    buf[0, 1] = padded_img[:, :, 1]  # G
+    buf[0, 2] = padded_img[:, :, 0]  # B
+    buf /= 255.0
 
     start_infer = time.perf_counter()
     outputs = app.state.session.run(None, {app.state.input_name: buf})
@@ -482,6 +512,10 @@ async def lifespan(app: FastAPI):
 
     # Determine best available execution provider
     providers = build_providers(BASE_DIR)
+    # Bound concurrent inference so request bursts queue instead of
+    # oversubscribing the GPU/CPU with parallel session.run calls.
+    app.state.infer_sem = asyncio.Semaphore(INFER_CONCURRENCY)
+
     try:
         app.state.session    = ort.InferenceSession(str(MODEL_PATH), providers=providers)
         app.state.input_name = app.state.session.get_inputs()[0].name
@@ -526,9 +560,10 @@ async def lifespan(app: FastAPI):
         logger.info(f"Running model {SERVER_MODEL} @ {IMG_SZ_X}x{IMG_SZ_Y}px on TensorRT"
                     f" (FP16={'on' if TRT_FP16 else 'off'})")
         # Warn about first-run engine compilation only when no cached engine exists.
-        # Once compiled, the .trt cache file is reused on all subsequent starts.
+        # ONNX Runtime's TensorRT EP writes cache files with an .engine extension;
+        # once compiled, they are reused on all subsequent starts.
         trt_cache = TRT_CACHE_DIR if TRT_CACHE_DIR else str(BASE_DIR / "models")
-        if not any(Path(trt_cache).glob("*.trt")):
+        if not any(Path(trt_cache).glob("*.engine")):
             logger.warning("No TensorRT engine cache found — first run will compile the engine "
                            "(may take several minutes). Subsequent starts will use the cache.")
     elif provider_used == "CUDAExecutionProvider":
@@ -536,16 +571,12 @@ async def lifespan(app: FastAPI):
     elif provider_used == "CoreMLExecutionProvider":
         logger.info(f"Running model {SERVER_MODEL} @ {IMG_SZ_X}x{IMG_SZ_Y}px on CoreML (ANE/GPU/CPU)")
     else:
-        logger.warning(f"CUDAExecutionProvider unavailable — running on CPU ({get_cpu_name()}). "
-                        "Check cuDNN/CUDA installation if GPU was expected.")
+        logger.warning(f"No accelerated execution provider available — running on CPU ({get_cpu_name()}). "
+                        "Check your onnxruntime build and CUDA/cuDNN installation if acceleration was expected.")
 
     logger.info("Performing warm-up runs...")
-    dummy = np.zeros((IMG_SZ_Y, IMG_SZ_X, 3), dtype=np.uint8)
-    dummy_padded, _, _ = letterbox(dummy, new_shape=(IMG_SZ_X, IMG_SZ_Y))
-    warmup_buf = np.empty((1, 3, IMG_SZ_Y, IMG_SZ_X), dtype=np.float32)
-    warmup_buf[0, 0] = dummy_padded[:, :, 2].astype(np.float32) / 255.0
-    warmup_buf[0, 1] = dummy_padded[:, :, 1].astype(np.float32) / 255.0
-    warmup_buf[0, 2] = dummy_padded[:, :, 0].astype(np.float32) / 255.0
+    # An all-zeros blob is sufficient to trigger kernel compilation / caching.
+    warmup_buf = np.zeros((1, 3, IMG_SZ_Y, IMG_SZ_X), dtype=np.float32)
     for _ in range(WARMUP_RUNS):
         app.state.session.run(None, {app.state.input_name: warmup_buf})
     logger.info(f"Simple YOLO ONNX server {VERSION} ready and listening on {SERVER_LISTEN}:{SERVER_PORT}")
@@ -593,12 +624,20 @@ async def detect(
       }
     """
     # Guard: model must be loaded before accepting requests
-    if not hasattr(request.app.state, 'session') or request.app.state.session is None:
+    if not hasattr(request.app.state, 'session'):
         raise HTTPException(status_code=503, detail="Model not loaded")
 
     # Validate form-supplied min_confidence before doing any further work
     if not (0.0 <= min_confidence <= 1.0):
         raise HTTPException(status_code=400, detail="min_confidence must be between 0.0 and 1.0")
+
+    # Reject oversized payloads by header before buffering the body.
+    # The 1.4 factor allows for base64 (+33%) and JSON/multipart framing
+    # overhead. Bodies without a Content-Length are still caught by the
+    # per-path MAX_IMAGE_BYTES checks below.
+    content_length = request.headers.get("content-length", "")
+    if content_length.isdigit() and int(content_length) > int(MAX_IMAGE_BYTES * 1.4):
+        raise HTTPException(status_code=413, detail="Request body too large")
 
     raw_data = None
     # Image ingestion — multipart/form-data
@@ -612,30 +651,15 @@ async def detect(
         except Exception as e:
             raise HTTPException(status_code=400, detail=f"File read error: {e}")
 
-    # Image ingestion — application/json with base64 payload
+    # Image ingestion — application/json with base64 payload.
+    # JSON parsing and base64 decoding of a multi-MB body are CPU-bound, so
+    # both run off the event loop in a single thread hop.
     elif "application/json" in request.headers.get("content-type", ""):
         try:
-            body_json = await request.json()
-            if "image" not in body_json:
-                raise HTTPException(status_code=400, detail="Missing 'image' in JSON body")
-            # Override min_confidence from JSON body if provided, then re-validate.
-            # Re-validation is required because the form-level check above only
-            # covers the multipart path; a JSON client can supply any float value.
-            try:
-                min_confidence = float(body_json.get("min_confidence", min_confidence))
-            except (TypeError, ValueError):
-                raise HTTPException(status_code=400, detail="Invalid min_confidence value")
-            if not (0.0 <= min_confidence <= 1.0):
-                raise HTTPException(status_code=400, detail="min_confidence must be between 0.0 and 1.0")
-            img_b64 = body_json["image"]
-            if not isinstance(img_b64, str):
-                raise HTTPException(status_code=400, detail="'image' must be a base64 string")
-            # Strip optional data URI prefix: "data:image/jpeg;base64,<data>"
-            if img_b64.startswith("data:"):
-                img_b64 = img_b64.split(",", 1)[1]
-            raw_data = base64.b64decode(img_b64, validate=True)
-            if not raw_data or len(raw_data) > MAX_IMAGE_BYTES:
-                raise HTTPException(status_code=400, detail="Invalid or oversized image")
+            body = await request.body()
+            raw_data, min_confidence = await asyncio.to_thread(
+                parse_json_request, body, min_confidence
+            )
         except HTTPException:
             raise
         except Exception as e:
@@ -657,10 +681,12 @@ async def detect(
     except Exception as e:
         raise HTTPException(status_code=400, detail=f"Image decode failed: {e}")
 
-    # Inference (offloaded to thread; ONNX Runtime session.run is thread-safe)
-    predictions, infer_ms, pipeline_ms = await asyncio.to_thread(
-        run_inference_sync, request.app, img, min_confidence
-    )
+    # Inference (offloaded to thread; ONNX Runtime session.run is thread-safe).
+    # The semaphore bounds concurrent inference to INFER_CONCURRENCY.
+    async with request.app.state.infer_sem:
+        predictions, infer_ms, pipeline_ms = await asyncio.to_thread(
+            run_inference_sync, request.app, img, min_confidence
+        )
     return {
         "success":     True,
         "count":       len(predictions),
